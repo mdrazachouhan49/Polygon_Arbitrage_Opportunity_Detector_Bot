@@ -1,0 +1,16 @@
+Generated files
+/target/
+
+OS-specific files
+.DS_Store
+Thumbs.db
+
+Environment variables
+.env
+
+Database file
+arbitrage_opportunities.db
+
+IDE-specific files
+.vscode/
+*.swp

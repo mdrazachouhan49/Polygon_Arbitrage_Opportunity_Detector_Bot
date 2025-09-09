@@ -1,0 +1,16 @@
+
+# config.toml
+rpc_url_key = "POLYGON_RPC_URL"
+
+[dexes]
+uniswap_v3 = "0xE592427A0AEce92De3Edee1F18E0157C05861564"
+quickswap_v2 = "0xa5E0829CaCEd8fFDD4De3c43696c57F7D7A678ff"
+
+[tokens]
+weth = "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619"
+usdc = "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174"
+
+[arbitrage]
+trade_amount_weth = 0.01
+profit_threshold_usdc = 1.0 # Minimum profit in USDC to log
+polling_interval_seconds = 10

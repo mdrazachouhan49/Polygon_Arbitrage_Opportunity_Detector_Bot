@@ -1,0 +1,25 @@
+[package]
+name = "arbitrage_bot"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# Ethers-rs is the primary library for blockchain interaction
+ethers-contract = "2.0"
+ethers-providers = "2.0"
+ethers-core = "2.0"
+# Tokio is a powerful async runtime for concurrent operations
+tokio = { version = "1.0", features = ["full"] }
+# Anyhow for simple error handling
+anyhow = "1.0"
+# Dotenv for managing environment variables
+dotenv = "0.15"
+# Rusqlite for a simple, file-based database
+rusqlite = { version = "0.30", features = ["bundled"] }
+# Serde for deserialization (used for config.toml)
+serde = { version = "1.0", features = ["derive"] }
+toml = "0.8"
+chrono = "0.4"
+# Ethers ABI-gen is a build-time dependency for generating contract bindings
+[build-dependencies]
+ethers-contract-abigen = "2.0"
