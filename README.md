@@ -4,6 +4,7 @@ This is a Rust application designed to detect potential arbitrage opportunities 
 The project is built on the foundation of blockchain interaction in Rust, demonstrating how to query on-chain data and perform calculations to identify market inefficiencies.
 
 Key Features:
+
 Multi-DEX Price Fetching: Connects to a Polygon RPC node to get real-time price data from two DEXes (Uniswap and QuickSwap).
 Arbitrage Detection: Compares prices and identifies opportunities where the profit exceeds a user-defined threshold.
 Simulated Profit Calculation: Calculates estimated profit for a hypothetical trade, accounting for a simplified gas cost.
@@ -11,6 +12,7 @@ Configuration Management: Uses config.toml and .env files for easy and secure co
 Data Persistence: Logs all detected opportunities and their simulated profits to an SQLite database.
 
 Technology Stack:
+
 Programming Language: Rust
 Blockchain: Polygon Network
 DEX Interaction: Uniswap V3 and QuickSwap V2
@@ -51,6 +53,7 @@ The bot will start running in your terminal, periodically checking prices and lo
 
 
 Project Structure:
+
 src/main.rs: Contains the core application logic, including the price fetching loop, arbitrage detection, and database logging.
 
 build.rs: A build script that generates Rust-friendly bindings from the DEX smart contract ABIs.
