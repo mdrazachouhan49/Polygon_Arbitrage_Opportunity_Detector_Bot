@@ -25,7 +25,7 @@ struct Config {
 
 #[derive(Debug, Deserialize)]
 struct DexesConfig {
-    uniswap_v3: Address,
+    uniswap_v2: Address,
     quickswap_v2: Address,
 }
 
@@ -64,6 +64,27 @@ fn setup_database() -> SqliteResult<Connection> {
     Ok(conn)
 }
 
+async fn fetch_price<M: ethers_providers::Middleware>(
+    contract: &UniswapRouter<M>,
+    amount_in: U256,
+    path: Vec<Address>,
+    dex_name: &str,
+) -> Result<U256> {
+    // Add this debug print
+    println!(
+        "📊 Fetching price from {} with amount_in: {} wei, path: {:?}",
+        dex_name, amount_in, path
+    );
+     
+    match contract.get_amounts_out(amount_in, path).call().await {
+        Ok(amounts) => Ok(amounts[1]),
+        Err(e) => {
+            eprintln!("Error fetching price from {}: {:?}", dex_name, e);
+            Ok(U256::zero())
+        }
+    }
+}
+
 #[tokio::main]
 async fn main() -> Result<()> {
     // 1. Load Configuration
@@ -83,12 +104,13 @@ async fn main() -> Result<()> {
         println!("🔍 Checking for arbitrage opportunities...");
 
         // Get contract and token addresses from config
-        let dex_1_addr = config.dexes.uniswap_v3;
+        let dex_1_addr = config.dexes.uniswap_v2;
         let dex_2_addr = config.dexes.quickswap_v2;
         let weth_addr = config.tokens.weth;
         let usdc_addr = config.tokens.usdc;
 
         // Corrected line: explicit type conversion using .into()
+    
         let buy_amount_weth_u256: U256 = parse_units(config.arbitrage.trade_amount_weth, 18).unwrap().into(); // WETH has 18 decimals
 
         // 3. Fetch Prices from DEXes
@@ -101,27 +123,12 @@ async fn main() -> Result<()> {
         let path_usdc_weth: Vec<Address> = vec![usdc_addr, weth_addr];
 
         // Get price on DEX 1 (WETH -> USDC)
-        let price_1_usdc = dex_1_contract
-            .get_amounts_out(buy_amount_weth_u256, path_weth_usdc.clone())
-            .call()
-            .await
-            .map(|amounts| amounts[1])
-            .unwrap_or_else(|_| {
-                eprintln!("Error fetching price from DEX 1. Skipping this iteration.");
-                U256::from(0)
-            });
+        let price_1_usdc = fetch_price(&dex_1_contract, buy_amount_weth_u256, path_weth_usdc.clone(), "Uniswap V2").await?;
 
         // Get price on DEX 2 (USDC -> WETH)
-        let price_2_weth = dex_2_contract
-            .get_amounts_out(price_1_usdc, path_usdc_weth.clone())
-            .call()
-            .await
-            .map(|amounts| amounts[1])
-            .unwrap_or_else(|_| {
-                eprintln!("Error fetching price from DEX 2. Skipping this iteration.");
-                U256::from(0)
-            });
+        let price_2_weth = fetch_price(&dex_2_contract, price_1_usdc, path_usdc_weth.clone(), "QuickSwap V2").await?;
 
+        
         // 4. Calculate Simulated Profit
         // USDC has 6 decimals, WETH has 18.
         let weth_to_usdc_price_1 =
@@ -131,7 +138,7 @@ async fn main() -> Result<()> {
             price_2_weth.as_u128() as f64 / 1_000_000.0 / (price_1_usdc.as_u128() as f64 / 1_000_000.0);
 
         // Simulated gas cost in USDC
-        let simulated_gas_cost_usdc = 0.50; // a fixed, simplified cost
+        let simulated_gas_cost_usdc = 0.0; // a fixed, simplified cost
 
         // Corrected profit calculation
         let profit_weth_abs_diff = if price_2_weth > buy_amount_weth_u256 {
